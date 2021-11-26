@@ -15,7 +15,7 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.20.1 FATAL_ERROR)
-file(DOWNLOAD https://raw.githubusercontent.com/rapidsai/rapids-cmake/branch-22.02/RAPIDS.cmake
+file(DOWNLOAD https://raw.githubusercontent.com/rapidsai/rapids-cmake/branch-21.10/RAPIDS.cmake
     ${CMAKE_BINARY_DIR}/RAPIDS.cmake)
 include(${CMAKE_BINARY_DIR}/RAPIDS.cmake)
 include(rapids-cmake)
@@ -26,7 +26,7 @@ include(rapids-find)
 
 rapids_cuda_init_architectures(CUML)
 
-project(CUML VERSION 22.02.00 LANGUAGES CXX CUDA)
+project(CUML VERSION 21.10.00 LANGUAGES CXX CUDA)
 
 # Write the version header
 rapids_cmake_write_version_file(include/cuml/version_config.hpp)
@@ -48,9 +48,9 @@ option(BUILD_CUML_CPP_LIBRARY "Build libcuml shared library" ON)
 option(BUILD_CUML_TESTS "Build cuML algorithm tests" ON)
 option(BUILD_CUML_MG_TESTS "Build cuML multigpu algorithm tests" OFF)
 option(BUILD_PRIMS_TESTS "Build ml-prim tests" ON)
-option(BUILD_CUML_EXAMPLES "Build C++ API usage examples" ON)
-option(BUILD_CUML_BENCH "Build cuML C++ benchmark tests" ON)
-option(BUILD_CUML_PRIMS_BENCH "Build ml-prims C++ benchmark tests" ON)
+option(BUILD_CUML_EXAMPLES "Build C++ API usage examples" OFF)
+option(BUILD_CUML_BENCH "Build cuML C++ benchmark tests" OFF)
+option(BUILD_CUML_PRIMS_BENCH "Build ml-prims C++ benchmark tests" OFF)
 option(BUILD_CUML_STD_COMMS "Build the standard NCCL+UCX Communicator" ON)
 option(BUILD_CUML_MPI_COMMS "Build the MPI+NCCL Communicator (used for testing)" OFF)
 option(CUDA_ENABLE_KERNEL_INFO "Enable kernel resource usage info" OFF)
@@ -189,10 +189,6 @@ endif()
 # add third party dependencies using CPM
 rapids_cpm_init()
 
-message(STATUS "CUML: Overriding thrust settings to set alwas_download.")
-include(${rapids-cmake-dir}/cpm/package_override.cmake)
-rapids_cpm_package_override(${CMAKE_CURRENT_SOURCE_DIR}/cmake/override_cpm.json)
-
 include(cmake/thirdparty/get_thrust.cmake)
 include(cmake/thirdparty/get_rmm.cmake)
 
@@ -201,7 +197,6 @@ if(LINK_FAISS)
 endif()
 
 include(cmake/thirdparty/get_treelite.cmake)
-include(cmake/thirdparty/get_gputreeshap.cmake)
 include(cmake/thirdparty/get_raft.cmake)
 
 if(NOT SINGLEGPU)
@@ -249,76 +244,73 @@ if(BUILD_CUML_CPP_LIBRARY)
   target_sources(${CUML_CPP_TARGET}
     PRIVATE
       src/fil/fil.cu
-      src/fil/infer.cu
-      src/fil/treelite_import.cu)
+      src/fil/infer.cu)
 
   # Rest of the algorithms
   if(CUML_CPP_ALGORITHMS STREQUAL "ALL")
     target_sources(${CUML_CPP_TARGET}
       PRIVATE
-        src/arima/batched_arima.cu
-        src/arima/batched_kalman.cu
-        src/datasets/make_arima.cu
-        src/datasets/make_blobs.cu
-        src/datasets/make_regression.cu
-        src/dbscan/dbscan.cu
-        src/decisiontree/decisiontree.cu
-        src/explainer/kernel_shap.cu
-        src/explainer/permutation_shap.cu
-        src/explainer/tree_shap.cu
-        src/fil/fil.cu
-        src/fil/infer.cu
-        src/glm/glm.cu
-        src/genetic/genetic.cu
-        src/genetic/program.cu
-        src/genetic/node.cu
+        #src/arima/batched_arima.cu
+        #src/arima/batched_kalman.cu
+        #src/datasets/make_arima.cu
+        #src/datasets/make_blobs.cu
+        #src/datasets/make_regression.cu
+        #src/dbscan/dbscan.cu
+        #src/decisiontree/decisiontree.cu
+        #src/explainer/kernel_shap.cu
+        #src/explainer/permutation_shap.cu
+        #src/fil/fil.cu
+        #src/fil/infer.cu
+        #src/glm/glm.cu
+        #src/genetic/genetic.cu
+        #src/genetic/node.cu
         src/hdbscan/hdbscan.cu
         src/hdbscan/condensed_hierarchy.cu
-        src/holtwinters/holtwinters.cu
-        src/kmeans/kmeans.cu
+        #src/holtwinters/holtwinters.cu
+        #src/kmeans/kmeans.cu
         src/knn/knn.cu
         src/knn/knn_sparse.cu
-        src/hierarchy/linkage.cu
-        src/metrics/accuracy_score.cu
-        src/metrics/adjusted_rand_index.cu
-        src/metrics/completeness_score.cu
-        src/metrics/entropy.cu
-        src/metrics/homogeneity_score.cu
-        src/metrics/kl_divergence.cu
-        src/metrics/mutual_info_score.cu
-        src/metrics/pairwise_distance.cu
-        src/metrics/pairwise_distance_canberra.cu
-        src/metrics/pairwise_distance_chebyshev.cu
-        src/metrics/pairwise_distance_correlation.cu
-        src/metrics/pairwise_distance_cosine.cu
-        src/metrics/pairwise_distance_euclidean.cu
-        src/metrics/pairwise_distance_hamming.cu
-        src/metrics/pairwise_distance_hellinger.cu
-        src/metrics/pairwise_distance_jensen_shannon.cu
-        src/metrics/pairwise_distance_kl_divergence.cu
-        src/metrics/pairwise_distance_l1.cu
-        src/metrics/pairwise_distance_minkowski.cu
-        src/metrics/pairwise_distance_russell_rao.cu
-        src/metrics/r2_score.cu
-        src/metrics/rand_index.cu
-        src/metrics/silhouette_score.cu
-        src/metrics/trustworthiness.cu
-        src/metrics/v_measure.cu
-        src/pca/pca.cu
-        src/randomforest/randomforest.cu
-        src/random_projection/rproj.cu
-        src/solver/lars.cu
-        src/solver/solver.cu
-        src/spectral/spectral.cu
-        src/svm/svc.cu
-        src/svm/svr.cu
-        src/svm/linear.cu
-        src/svm/ws_util.cu
-        src/tsa/auto_arima.cu
-        src/tsa/stationarity.cu
-        src/tsne/tsne.cu
-        src/tsvd/tsvd.cu
-        src/umap/umap.cu)
+        #src/hierarchy/linkage.cu
+        #src/metrics/accuracy_score.cu
+        #src/metrics/adjusted_rand_index.cu
+        #src/metrics/completeness_score.cu
+        #src/metrics/entropy.cu
+        #src/metrics/homogeneity_score.cu
+        #src/metrics/kl_divergence.cu
+        #src/metrics/mutual_info_score.cu
+        #src/metrics/pairwise_distance.cu
+        #src/metrics/pairwise_distance_canberra.cu
+        #src/metrics/pairwise_distance_chebyshev.cu
+        #src/metrics/pairwise_distance_correlation.cu
+        #src/metrics/pairwise_distance_cosine.cu
+        #src/metrics/pairwise_distance_euclidean.cu
+        #src/metrics/pairwise_distance_hamming.cu
+        #src/metrics/pairwise_distance_hellinger.cu
+        #src/metrics/pairwise_distance_jensen_shannon.cu
+        #src/metrics/pairwise_distance_kl_divergence.cu
+        #src/metrics/pairwise_distance_l1.cu
+        #src/metrics/pairwise_distance_minkowski.cu
+        #src/metrics/pairwise_distance_russell_rao.cu
+        #src/metrics/r2_score.cu
+        #src/metrics/rand_index.cu
+        #src/metrics/silhouette_score.cu
+        #src/metrics/trustworthiness.cu
+        #src/metrics/v_measure.cu
+        #src/pca/pca.cu
+        #src/randomforest/randomforest.cu
+        #src/random_projection/rproj.cu
+        #src/solver/lars.cu
+        #src/solver/solver.cu
+        #src/spectral/spectral.cu
+        #src/svm/svc.cu
+        #src/svm/svr.cu
+        #src/svm/ws_util.cu
+        #src/tsa/auto_arima.cu
+        #src/tsa/stationarity.cu
+        #src/tsne/tsne.cu
+        #src/tsvd/tsvd.cu
+        #src/umap/umap.cu
+        )
   endif()
 
   # multi GPU components
@@ -392,11 +384,10 @@ if(BUILD_CUML_CPP_LIBRARY)
       CUDA::cusolver
       CUDA::cudart
       CUDA::cusparse
-      GPUTreeShap::GPUTreeShap
       $<$<BOOL:${NVTX}>:CUDA::nvToolsExt>
       $<$<BOOL:${LINK_FAISS}>:FAISS::FAISS>
-      $<IF:$<BOOL:${Treelite_ADDED}>,treelite::treelite_static,treelite::treelite>
-      $<IF:$<BOOL:${Treelite_ADDED}>,treelite::treelite_runtime_static,treelite::treelite_runtime>
+      #$<IF:$<BOOL:${Treelite_ADDED}>,treelite::treelite_static,treelite::treelite>
+      #$<IF:$<BOOL:${Treelite_ADDED}>,treelite::treelite_runtime_static,treelite::treelite_runtime>
       $<$<BOOL:${OpenMP_FOUND}>:OpenMP::OpenMP_CXX>
       $<$<OR:$<BOOL:${BUILD_CUML_STD_COMMS}>,$<BOOL:${BUILD_CUML_MPI_COMMS}>>:NCCL::NCCL>
       $<$<BOOL:${BUILD_CUML_MPI_COMMS}>:${MPI_CXX_LIBRARIES}>

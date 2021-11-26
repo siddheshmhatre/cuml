@@ -84,6 +84,7 @@ DISABLE_FORCE_CLONE_RAFT=OFF
 #  FIXME: if INSTALL_PREFIX is not set, check PREFIX, then check
 #         CONDA_PREFIX, but there is no fallback from there!
 INSTALL_PREFIX=${INSTALL_PREFIX:=${PREFIX:=${CONDA_PREFIX}}}
+INSTALL_PREFIX="/home/siddheshmhatre/cuml"
 PARALLEL_LEVEL=${PARALLEL_LEVEL:=""}
 
 # Default to Ninja if generator is not specified
